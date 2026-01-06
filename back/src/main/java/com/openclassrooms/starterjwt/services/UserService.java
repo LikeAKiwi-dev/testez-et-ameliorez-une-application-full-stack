@@ -1,5 +1,6 @@
 package com.openclassrooms.starterjwt.services;
 
+import com.openclassrooms.starterjwt.exception.NotFoundException;
 import com.openclassrooms.starterjwt.exception.UnauthorizedOperationException;
 import com.openclassrooms.starterjwt.models.User;
 import com.openclassrooms.starterjwt.repository.UserRepository;
@@ -33,6 +34,7 @@ public class UserService {
     }
 
     public User findById(Long id) {
-        return this.userRepository.findById(id).orElse(null);
+        return userRepository.findById(id).orElseThrow(NotFoundException::new);
     }
+
 }
