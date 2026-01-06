@@ -28,6 +28,14 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Bad request", request.getRequestURI());
     }
 
+    @ExceptionHandler(UnauthorizedOperationException.class)
+    public ResponseEntity<ApiError> handleUnauthorized(
+            UnauthorizedOperationException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, "Validation error", request.getRequestURI());
