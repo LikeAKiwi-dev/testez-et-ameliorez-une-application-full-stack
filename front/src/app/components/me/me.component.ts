@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import {Component, OnInit, inject, DestroyRef} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { User } from '../../core/models/user.interface';
@@ -6,10 +6,12 @@ import { SessionService } from '../../core/service/session.service';
 import { UserService } from '../../core/service/user.service';
 import { MaterialModule } from "../../shared/material.module";
 import { CommonModule } from "@angular/common";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {FlexModule} from "@angular/flex-layout";
 
 @Component({
   selector: 'app-me',
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, FlexModule],
   templateUrl: './me.component.html',
   styleUrls: ['./me.component.scss']
 })
@@ -19,11 +21,13 @@ export class MeComponent implements OnInit {
   private matSnackBar = inject(MatSnackBar);
   private userService = inject(UserService);
   public user: User | undefined;
+  private readonly destroyRef = inject(DestroyRef);
 
 
   ngOnInit(): void {
     this.userService
       .getById(this.sessionService.sessionInformation!.id.toString())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((user: User) => this.user = user);
   }
 
@@ -34,6 +38,7 @@ export class MeComponent implements OnInit {
   public delete(): void {
     this.userService
       .delete(this.sessionService.sessionInformation!.id.toString())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((_) => {
         this.matSnackBar.open("Your account has been deleted !", 'Close', { duration: 3000 });
         this.sessionService.logOut();

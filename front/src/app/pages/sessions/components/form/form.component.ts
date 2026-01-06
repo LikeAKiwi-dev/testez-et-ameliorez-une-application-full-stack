@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import {Component, OnInit, inject, DestroyRef} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,10 +8,12 @@ import { Session } from '../../../../core/models/session.interface';
 import { SessionApiService } from '../../../../core/service/session-api.service';
 import { MaterialModule } from "../../../../shared/material.module";
 import { CommonModule } from "@angular/common";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {FlexModule} from "@angular/flex-layout";
 
 @Component({
   selector: 'app-form',
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, FlexModule],
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss']
 })
@@ -28,6 +30,7 @@ export class FormComponent implements OnInit {
   public sessionForm: FormGroup | undefined;
   public teachers$ = this.teacherService.all();
   private id: string | undefined;
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     if (!this.sessionService.sessionInformation!.admin) {
@@ -39,6 +42,7 @@ export class FormComponent implements OnInit {
       this.id = this.route.snapshot.paramMap.get('id')!;
       this.sessionApiService
         .detail(this.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((session: Session) => this.initForm(session));
     } else {
       this.initForm();
@@ -51,10 +55,12 @@ export class FormComponent implements OnInit {
     if (!this.onUpdate) {
       this.sessionApiService
         .create(session)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((_: Session) => this.exitPage('Session created !'));
     } else {
       this.sessionApiService
         .update(this.id!, session)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((_: Session) => this.exitPage('Session updated !'));
     }
   }

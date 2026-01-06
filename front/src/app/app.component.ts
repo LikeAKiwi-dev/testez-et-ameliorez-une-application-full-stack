@@ -5,10 +5,11 @@ import { AuthService } from './core/service/auth.service';
 import { SessionService } from './core/service/session.service';
 import {CommonModule} from "@angular/common";
 import {MaterialModule} from "./shared/material.module";
+import {FlexModule} from "@angular/flex-layout";
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, MaterialModule, RouterOutlet, RouterModule],
+  imports: [CommonModule, MaterialModule, RouterOutlet, RouterModule, FlexModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
