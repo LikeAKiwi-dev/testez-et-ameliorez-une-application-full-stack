@@ -27,7 +27,6 @@ describe('LoginComponent (integration)', () => {
     jest.clearAllMocks();
 
     await TestBed.configureTestingModule({
-      // LoginComponent est standalone => il va dans imports
       imports: [LoginComponent, NoopAnimationsModule],
       providers: [
         { provide: Router, useValue: routerMock },
