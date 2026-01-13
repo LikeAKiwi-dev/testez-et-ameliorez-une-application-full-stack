@@ -56,7 +56,6 @@ describe('DetailComponent (integration)', () => {
     sessionApiMock.detail.mockReturnValue(of(sessionMock));
     teacherServiceMock.detail.mockReturnValue(of(teacherMock));
 
-    // delete/participate/unParticipate : observable qui complète
     sessionApiMock.delete.mockReturnValue(of(void 0));
     sessionApiMock.participate.mockReturnValue(of(void 0));
     sessionApiMock.unParticipate.mockReturnValue(of(void 0));
