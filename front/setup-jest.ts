@@ -13,6 +13,25 @@ const mock = () => {
   };
 };
 
+const originalConsoleError = console.error;
+
+console.error = (...args: any[]) => {
+  const first = args[0];
+
+  const message =
+    typeof first === 'string'
+      ? first
+      : first && typeof first.message === 'string'
+        ? first.message
+        : '';
+
+  if (message.includes('Could not parse CSS stylesheet')) {
+    return;
+  }
+
+  originalConsoleError(...args);
+};
+
 Object.defineProperty(window, 'localStorage', { value: mock() });
 Object.defineProperty(window, 'sessionStorage', { value: mock() });
 Object.defineProperty(window, 'getComputedStyle', {
@@ -29,6 +48,22 @@ Object.defineProperty(document.body.style, 'transform', {
     };
   },
 });
+
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  }),
+});
+
+
 
 /* output shorter and more meaningful Zone error stack traces */
 // Error.stackTraceLimit = 2;

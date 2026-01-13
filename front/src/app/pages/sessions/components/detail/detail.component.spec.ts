@@ -1,46 +1,141 @@
-import { HttpClientModule } from '@angular/common/http';
+import { describe, it, expect, jest } from '@jest/globals';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { RouterTestingModule, } from '@angular/router/testing';
-import { expect } from '@jest/globals';
-import { SessionService } from '../../../../core/service/session.service';
+import { of } from 'rxjs';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 
 import { DetailComponent } from './detail.component';
+import { SessionApiService } from '../../../../core/service/session-api.service';
+import { TeacherService } from '../../../../core/service/teacher.service';
+import { SessionService } from '../../../../core/service/session.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
-
-describe('DetailComponent', () => {
-  let component: DetailComponent;
+describe('DetailComponent (integration)', () => {
   let fixture: ComponentFixture<DetailComponent>;
-  let service: SessionService;
+  let component: DetailComponent;
 
-  const mockSessionService = {
-    sessionInformation: {
-      admin: true,
-      id: 1
-    }
-  }
+  const sessionApiMock = {
+    detail: jest.fn(),
+    delete: jest.fn(),
+    participate: jest.fn(),
+    unParticipate: jest.fn(),
+  };
 
-  beforeEach(async () => {
+  const teacherServiceMock = {
+    detail: jest.fn(),
+  };
+
+  const snackBarMock = {
+    open: jest.fn(),
+  };
+
+  const makeActivatedRoute = (id: string) => ({
+    snapshot: {
+      paramMap: {
+        get: (key: string) => (key === 'id' ? id : null),
+      },
+    },
+  });
+
+  const createComponent = async (opts: { admin: boolean; userId: number; sessionUsers: number[] }) => {
+    const { admin, userId, sessionUsers } = opts;
+
+    const sessionMock = {
+      id: 1,
+      name: 'session name',
+      description: 'desc',
+      date: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      teacher_id: 77,
+      users: sessionUsers,
+    } as any;
+
+    const teacherMock = { id: 77, firstName: 'Ada', lastName: 'Lovelace' } as any;
+
+    sessionApiMock.detail.mockReturnValue(of(sessionMock));
+    teacherServiceMock.detail.mockReturnValue(of(teacherMock));
+
+    // delete/participate/unParticipate : observable qui complète
+    sessionApiMock.delete.mockReturnValue(of(void 0));
+    sessionApiMock.participate.mockReturnValue(of(void 0));
+    sessionApiMock.unParticipate.mockReturnValue(of(void 0));
+
+    const sessionServiceMock: Partial<SessionService> = {
+      sessionInformation: { id: userId, admin } as any,
+    };
+
     await TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule,
-        HttpClientModule,
-        MatSnackBarModule,
-        ReactiveFormsModule
+      imports: [DetailComponent, NoopAnimationsModule],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: makeActivatedRoute('12') },
+        { provide: SessionApiService, useValue: sessionApiMock },
+        { provide: TeacherService, useValue: teacherServiceMock },
+        { provide: SessionService, useValue: sessionServiceMock },
+        { provide: MatSnackBar, useValue: snackBarMock },
       ],
-      declarations: [DetailComponent],
-      providers: [{ provide: SessionService, useValue: mockSessionService }],
-    })
-      .compileComponents();
-      service = TestBed.inject(SessionService);
+    }).compileComponents();
+
     fixture = TestBed.createComponent(DetailComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should load session + teacher and show Delete button when admin', async () => {
+    await createComponent({ admin: true, userId: 5, sessionUsers: [1, 2] });
+
+    expect(sessionApiMock.detail).toHaveBeenCalledWith('12');
+    expect(teacherServiceMock.detail).toHaveBeenCalledWith('77');
+
+    fixture.detectChanges();
+
+    const deleteBtn = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Delete')
+    );
+    expect(deleteBtn).toBeTruthy();
+  });
+
+  it('should show Participate when not admin and user is NOT participating', async () => {
+    await createComponent({ admin: false, userId: 5, sessionUsers: [1, 2] });
+
+    fixture.detectChanges();
+
+    const participateBtn = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Participate')
+    );
+    expect(participateBtn).toBeTruthy();
+
+    const dontBtn = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Do not participate')
+    );
+    expect(dontBtn).toBeFalsy();
+  });
+
+  it('should show Do not participate when not admin and user IS participating', async () => {
+    await createComponent({ admin: false, userId: 5, sessionUsers: [5, 9] });
+
+    fixture.detectChanges();
+
+    const dontBtn = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Do not participate')
+    );
+    expect(dontBtn).toBeTruthy();
+  });
+
+  it('should call delete() and navigate when admin calls delete()', async () => {
+    await createComponent({ admin: true, userId: 5, sessionUsers: [1, 2] });
+
+    const router = TestBed.inject(Router);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true as any);
+
+    component.delete();
+
+    expect(sessionApiMock.delete).toHaveBeenCalledWith('12');
+    expect(navigateSpy).toHaveBeenCalledWith(['sessions']);
   });
 });
-
