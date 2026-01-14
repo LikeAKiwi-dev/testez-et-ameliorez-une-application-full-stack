@@ -1,11 +1,7 @@
 describe('Register page', () => {
   beforeEach(() => {
     cy.visit('/register');
-
-    cy.intercept('POST', '**/auth/register', {
-      statusCode: 200,
-      body: {}
-    }).as('register');
+    cy.intercept('POST', '**/auth/register', { statusCode: 200, body: {} }).as('register');
   });
 
   it('should register a new user and redirect to login', () => {
