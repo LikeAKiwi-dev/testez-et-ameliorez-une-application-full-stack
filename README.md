@@ -289,3 +289,10 @@ Les seuils de couverture sont respectés pour :
 
 Chaque partie du projet atteint **au minimum 80 % de couverture** pour l’ensemble des indicateurs,
 conformément aux critères d’évaluation OpenClassrooms.
+
+## Preuves de couverture
+
+Des preuves exportées (PNG) sont disponibles dans :
+- reports/coverage/front-jest.png
+- reports/coverage/front-e2e.png
+- reports/coverage/back-jacoco.png
