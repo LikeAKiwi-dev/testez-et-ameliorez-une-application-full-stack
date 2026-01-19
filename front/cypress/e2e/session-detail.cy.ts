@@ -1,4 +1,24 @@
 /// <reference types="cypress" />
+
+type User = {
+  id: number;
+};
+
+type Teacher = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
+
+type Session = {
+  id: number;
+  name?: string;
+  description?: string;
+  date?: string;
+  teacher_id?: number;
+  users: number[];
+};
+
 describe('Session detail page (via UI navigation)', () => {
   beforeEach(() => {
     cy.fixture('user-admin.json').as('adminUser');
@@ -8,12 +28,18 @@ describe('Session detail page (via UI navigation)', () => {
   });
 
   const loginAs = (userAlias: 'adminUser' | 'normalUser') => {
-    cy.get(`@${userAlias}`).then((user: any) => {
-      cy.intercept('POST', '**/api/auth/login', { statusCode: 200, body: user }).as('login');
+    cy.get(`@${userAlias}`).then((user: unknown) => {
+      cy.intercept('POST', '**/api/auth/login', {
+        statusCode: 200,
+        body: user,
+      }).as('login');
     });
 
-    cy.get('@sessions').then((sessions: any) => {
-      cy.intercept('GET', '**/api/session', { statusCode: 200, body: sessions }).as('getSessions');
+    cy.get('@sessions').then((sessions: unknown) => {
+      cy.intercept('GET', '**/api/session', {
+        statusCode: 200,
+        body: sessions,
+      }).as('getSessions');
     });
 
     cy.visit('/login');
@@ -27,15 +53,23 @@ describe('Session detail page (via UI navigation)', () => {
   };
 
   const openDetailAndMockApis = (users: number[]) => {
-    cy.get('@sessions').then((sessions: any) => {
-      const s = { ...sessions[0], users };
+    cy.get('@sessions').then((sessions: unknown) => {
+      const list = sessions as Session[];
+      const s: Session = { ...list[0], users };
       const sessionId = s.id;
 
-      cy.intercept('GET', `**/api/session/${sessionId}`, { statusCode: 200, body: s }).as('getSession');
+      cy.intercept('GET', `**/api/session/${sessionId}`, {
+        statusCode: 200,
+        body: s,
+      }).as('getSession');
 
-      cy.get('@teachers').then((teachers: any) => {
-        const t = teachers[0];
-        cy.intercept('GET', `**/api/teacher/${t.id}`, { statusCode: 200, body: t }).as('getTeacher');
+      cy.get('@teachers').then((teachers: unknown) => {
+        const t = (teachers as Teacher[])[0];
+
+        cy.intercept('GET', `**/api/teacher/${t.id}`, {
+          statusCode: 200,
+          body: t,
+        }).as('getTeacher');
       });
 
       cy.contains('button', 'Detail').first().click();
@@ -56,9 +90,10 @@ describe('Session detail page (via UI navigation)', () => {
   it('non-admin: should show Participate when NOT participating', () => {
     loginAs('normalUser');
 
-    cy.get('@normalUser').then((user: any) => {
+    cy.get('@normalUser').then((user: unknown) => {
+      const u = user as User;
 
-      const usersNotParticipating = [1, 3, 4].filter((id) => id !== user.id);
+      const usersNotParticipating = [1, 3, 4].filter((id) => id !== u.id);
 
       openDetailAndMockApis(usersNotParticipating);
 
@@ -68,12 +103,14 @@ describe('Session detail page (via UI navigation)', () => {
     });
   });
 
-
   it('non-admin: should show Do not participate when participating', () => {
     loginAs('normalUser');
 
-    cy.get('@normalUser').then((user: any) => {
-      openDetailAndMockApis([user.id, 9]);
+    cy.get('@normalUser').then((user: unknown) => {
+      const u = user as User;
+
+      openDetailAndMockApis([u.id, 9]);
+
       cy.contains('button', 'Do not participate').should('exist');
       cy.contains('button', 'Participate').should('not.exist');
       cy.contains('button', 'Delete').should('not.exist');
@@ -84,11 +121,19 @@ describe('Session detail page (via UI navigation)', () => {
     loginAs('adminUser');
     openDetailAndMockApis([2, 3]);
 
-    cy.get('@sessions').then((sessions: any) => {
-      const sessionId = sessions[0].id;
+    cy.get('@sessions').then((sessions: unknown) => {
+      const list = sessions as Session[];
+      const sessionId = list[0].id;
 
-      cy.intercept('DELETE', `**/api/session/${sessionId}`, { statusCode: 200, body: {} }).as('deleteSession');
-      cy.intercept('GET', '**/api/session', { statusCode: 200, body: [] }).as('getSessionsAfterDelete');
+      cy.intercept('DELETE', `**/api/session/${sessionId}`, {
+        statusCode: 200,
+        body: {},
+      }).as('deleteSession');
+
+      cy.intercept('GET', '**/api/session', {
+        statusCode: 200,
+        body: [],
+      }).as('getSessionsAfterDelete');
 
       cy.contains('button', 'Delete').click();
 

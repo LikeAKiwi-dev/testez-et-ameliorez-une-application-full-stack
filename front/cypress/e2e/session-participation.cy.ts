@@ -1,4 +1,9 @@
 /// <reference types="cypress" />
+
+type User = { id: number };
+type Teacher = { id: number; firstName: string; lastName: string };
+type Session = { id: number; users: number[] } & Record<string, unknown>;
+
 describe('Session participation (non-admin)', () => {
   beforeEach(() => {
     cy.fixture('user-user.json').as('normalUser');
@@ -7,12 +12,18 @@ describe('Session participation (non-admin)', () => {
   });
 
   const loginAs = () => {
-    cy.get('@normalUser').then((user: any) => {
-      cy.intercept('POST', '**/api/auth/login', { statusCode: 200, body: user }).as('login');
+    cy.get('@normalUser').then((user: unknown) => {
+      cy.intercept('POST', '**/api/auth/login', {
+        statusCode: 200,
+        body: user,
+      }).as('login');
     });
 
-    cy.get('@sessions').then((sessions: any) => {
-      cy.intercept('GET', '**/api/session', { statusCode: 200, body: sessions }).as('getSessions');
+    cy.get('@sessions').then((sessions: unknown) => {
+      cy.intercept('GET', '**/api/session', {
+        statusCode: 200,
+        body: sessions,
+      }).as('getSessions');
     });
 
     cy.visit('/login');
@@ -28,22 +39,29 @@ describe('Session participation (non-admin)', () => {
   it('should participate, then unparticipate', () => {
     loginAs();
 
-    cy.get('@normalUser').then((user: any) => {
-      cy.get('@sessions').then((sessions: any) => {
-        const base = sessions[0];
+    cy.get('@normalUser').then((user: unknown) => {
+      const u = user as User;
+
+      cy.get('@sessions').then((sessions: unknown) => {
+        const list = sessions as Session[];
+        const base = list[0];
         const sessionId = base.id;
 
-        const usersNotParticipating = [1, 3, 4].filter((id) => id !== user.id);
-        const sessionNotParticipating = { ...base, users: usersNotParticipating };
+        const usersNotParticipating = [1, 3, 4].filter((id) => id !== u.id);
+        const sessionNotParticipating: Session = { ...base, users: usersNotParticipating };
 
         cy.intercept('GET', `**/api/session/${sessionId}`, {
           statusCode: 200,
           body: sessionNotParticipating,
         }).as('getSessionNotParticipating');
 
-        cy.get('@teachers').then((teachers: any) => {
-          const t = teachers[0];
-          cy.intercept('GET', `**/api/teacher/${t.id}`, { statusCode: 200, body: t }).as('getTeacher');
+        cy.get('@teachers').then((teachers: unknown) => {
+          const t = (teachers as Teacher[])[0];
+
+          cy.intercept('GET', `**/api/teacher/${t.id}`, {
+            statusCode: 200,
+            body: t,
+          }).as('getTeacher');
         });
 
         cy.contains('button', 'Detail').first().click();
@@ -55,13 +73,13 @@ describe('Session participation (non-admin)', () => {
         cy.contains('button', 'Participate').should('exist');
         cy.contains('button', 'Do not participate').should('not.exist');
 
-        cy.intercept('POST', `**/api/session/${sessionId}/participate/${user.id}`, {
+        cy.intercept('POST', `**/api/session/${sessionId}/participate/${u.id}`, {
           statusCode: 200,
           body: {},
         }).as('participate');
 
-        const usersParticipating = Array.from(new Set([...usersNotParticipating, user.id]));
-        const sessionParticipating = { ...base, users: usersParticipating };
+        const usersParticipating = Array.from(new Set([...usersNotParticipating, u.id]));
+        const sessionParticipating: Session = { ...base, users: usersParticipating };
 
         cy.intercept('GET', `**/api/session/${sessionId}`, {
           statusCode: 200,
@@ -76,13 +94,13 @@ describe('Session participation (non-admin)', () => {
         cy.contains('button', 'Do not participate').should('exist');
         cy.contains('button', 'Participate').should('not.exist');
 
-        cy.intercept('DELETE', `**/api/session/${sessionId}/participate/${user.id}`, {
+        cy.intercept('DELETE', `**/api/session/${sessionId}/participate/${u.id}`, {
           statusCode: 200,
           body: {},
         }).as('unparticipate');
 
         const usersAfter = usersNotParticipating;
-        const sessionAfter = { ...base, users: usersAfter };
+        const sessionAfter: Session = { ...base, users: usersAfter };
 
         cy.intercept('GET', `**/api/session/${sessionId}`, {
           statusCode: 200,

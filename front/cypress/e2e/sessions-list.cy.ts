@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+
 describe('Sessions list page', () => {
   beforeEach(() => {
     cy.fixture('sessions.json').as('sessions');
@@ -7,12 +8,18 @@ describe('Sessions list page', () => {
   });
 
   const loginAs = (userAlias: 'adminUser' | 'normalUser') => {
-    cy.get(`@${userAlias}`).then((user: any) => {
-      cy.intercept('POST', '**/api/auth/login', { statusCode: 200, body: user }).as('login');
+    cy.get(`@${userAlias}`).then((user: unknown) => {
+      cy.intercept('POST', '**/api/auth/login', {
+        statusCode: 200,
+        body: user,
+      }).as('login');
     });
 
-    cy.get('@sessions').then((sessions) => {
-      cy.intercept('GET', '**/api/session', { statusCode: 200, body: sessions }).as('getSessions');
+    cy.get('@sessions').then((sessions: unknown) => {
+      cy.intercept('GET', '**/api/session', {
+        statusCode: 200,
+        body: sessions,
+      }).as('getSessions');
     });
 
     cy.visit('/login');

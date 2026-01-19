@@ -1,4 +1,15 @@
 /// <reference types="cypress" />
+
+type User = {
+  id: number;
+};
+
+type Teacher = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
+
 describe('Session creation (admin)', () => {
   beforeEach(() => {
     cy.fixture('user-admin.json').as('adminUser');
@@ -7,8 +18,11 @@ describe('Session creation (admin)', () => {
   });
 
   const loginAsAdmin = () => {
-    cy.get('@adminUser').then((adminUser: any) => {
-      cy.intercept('POST', '**/api/auth/login', { statusCode: 200, body: adminUser }).as('login');
+    cy.get('@adminUser').then((adminUser: unknown) => {
+      cy.intercept('POST', '**/api/auth/login', {
+        statusCode: 200,
+        body: adminUser,
+      }).as('login');
     });
 
     cy.intercept('GET', '**/api/session', { statusCode: 200, body: [] }).as('getSessions');
@@ -26,8 +40,11 @@ describe('Session creation (admin)', () => {
   it('should create a session and go back to sessions list', () => {
     loginAsAdmin();
 
-    cy.get('@teachers').then((teachers: any) => {
-      cy.intercept('GET', '**/api/teacher', { statusCode: 200, body: teachers }).as('getTeachers');
+    cy.get('@teachers').then((teachers: unknown) => {
+      cy.intercept('GET', '**/api/teacher', {
+        statusCode: 200,
+        body: teachers,
+      }).as('getTeachers');
     });
 
     cy.contains('button', 'Create').click();
@@ -39,19 +56,27 @@ describe('Session creation (admin)', () => {
     cy.get('input[formcontrolname="name"]').type('Morning Yoga');
     cy.get('input[formcontrolname="date"]').type('2026-01-15');
 
-    cy.get('@teachers').then((teachers: any) => {
-      const t = teachers[0];
+    cy.get('@teachers').then((teachers: unknown) => {
+      const list = teachers as Teacher[];
+      const t = list[0];
+
       cy.get('mat-select[formcontrolname="teacher_id"]').click();
       cy.contains('mat-option', `${t.firstName} ${t.lastName}`).click();
     });
 
     cy.get('textarea[formcontrolname="description"]').type('A gentle session');
 
-    cy.get('@createResponse').then((createResponse: any) => {
-      cy.intercept('POST', '**/api/session', { statusCode: 200, body: createResponse }).as('createSession');
+    cy.get('@createResponse').then((createResponse: unknown) => {
+      cy.intercept('POST', '**/api/session', {
+        statusCode: 200,
+        body: createResponse,
+      }).as('createSession');
     });
 
-    cy.intercept('GET', '**/api/session', { statusCode: 200, body: [] }).as('getSessionsAfterCreate');
+    cy.intercept('GET', '**/api/session', {
+      statusCode: 200,
+      body: [],
+    }).as('getSessionsAfterCreate');
 
     cy.contains('button', 'Save').should('not.be.disabled').click();
 

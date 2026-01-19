@@ -1,4 +1,9 @@
 /// <reference types="cypress" />
+
+type User = {
+  id: number;
+};
+
 describe('Account page (/me) and logout', () => {
   beforeEach(() => {
     cy.fixture('user-admin.json').as('adminUser');
@@ -8,11 +13,17 @@ describe('Account page (/me) and logout', () => {
   });
 
   const loginAs = (userAlias: 'adminUser' | 'normalUser') => {
-    cy.get(`@${userAlias}`).then((user: any) => {
-      cy.intercept('POST', '**/api/auth/login', { statusCode: 200, body: user }).as('login');
+    cy.get(`@${userAlias}`).then((user: unknown) => {
+      cy.intercept('POST', '**/api/auth/login', {
+        statusCode: 200,
+        body: user,
+      }).as('login');
     });
 
-    cy.intercept('GET', '**/api/session', { statusCode: 200, body: [] }).as('getSessions');
+    cy.intercept('GET', '**/api/session', {
+      statusCode: 200,
+      body: [],
+    }).as('getSessions');
 
     cy.visit('/login');
     cy.get('input[formcontrolname="email"]').type('user@yoga.com');
@@ -27,9 +38,14 @@ describe('Account page (/me) and logout', () => {
   it('should display account info for admin and allow logout', () => {
     loginAs('adminUser');
 
-    cy.get('@adminUser').then((u: any) => {
-      cy.get('@meAdmin').then((me: any) => {
-        cy.intercept('GET', `**/api/user/${u.id}`, { statusCode: 200, body: me }).as('getMe');
+    cy.get('@adminUser').then((u: unknown) => {
+      const user = u as User;
+
+      cy.get('@meAdmin').then((me: unknown) => {
+        cy.intercept('GET', `**/api/user/${user.id}`, {
+          statusCode: 200,
+          body: me,
+        }).as('getMe');
       });
     });
 
@@ -48,12 +64,20 @@ describe('Account page (/me) and logout', () => {
   it('should allow a non-admin to delete their account (API call + redirect)', () => {
     loginAs('normalUser');
 
-    cy.get('@normalUser').then((u: any) => {
-      cy.get('@meUser').then((me: any) => {
-        cy.intercept('GET', `**/api/user/${u.id}`, { statusCode: 200, body: me }).as('getMe');
+    cy.get('@normalUser').then((u: unknown) => {
+      const user = u as User;
+
+      cy.get('@meUser').then((me: unknown) => {
+        cy.intercept('GET', `**/api/user/${user.id}`, {
+          statusCode: 200,
+          body: me,
+        }).as('getMe');
       });
 
-      cy.intercept('DELETE', `**/api/user/${u.id}`, { statusCode: 200, body: {} }).as('deleteMe');
+      cy.intercept('DELETE', `**/api/user/${user.id}`, {
+        statusCode: 200,
+        body: {},
+      }).as('deleteMe');
     });
 
     cy.contains('span', 'Account').click();
