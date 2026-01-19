@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 describe('Session update (admin)', () => {
   beforeEach(() => {
     cy.fixture('user-admin.json').as('adminUser');

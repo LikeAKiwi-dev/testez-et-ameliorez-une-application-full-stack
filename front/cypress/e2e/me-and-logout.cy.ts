@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 describe('Account page (/me) and logout', () => {
   beforeEach(() => {
     cy.fixture('user-admin.json').as('adminUser');

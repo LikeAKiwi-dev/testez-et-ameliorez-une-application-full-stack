@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 describe('Session detail page (via UI navigation)', () => {
   beforeEach(() => {
     cy.fixture('user-admin.json').as('adminUser');

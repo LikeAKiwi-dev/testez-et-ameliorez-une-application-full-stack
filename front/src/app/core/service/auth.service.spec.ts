@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
+import { expect } from '@jest/globals';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -25,7 +26,7 @@ describe('AuthService', () => {
   });
 
   it('login() should POST', () => {
-    const payload = { email: 'a@a.com', password: '123' } as any;
+    const payload = { email: 'a@a.com', password: '123' };
 
     service.login(payload).subscribe();
 
@@ -35,7 +36,7 @@ describe('AuthService', () => {
   });
 
   it('register() should POST', () => {
-    const payload = { email: 'a@a.com', firstName: 'A', lastName: 'B', password: '123' } as any;
+    const payload = { email: 'a@a.com', firstName: 'A', lastName: 'B', password: '123' };
 
     service.register(payload).subscribe();
 

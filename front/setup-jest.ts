@@ -15,14 +15,17 @@ const mock = () => {
 
 const originalConsoleError = console.error;
 
-console.error = (...args: any[]) => {
+console.error = (...args: unknown[]): void => {
   const first = args[0];
 
   const message =
     typeof first === 'string'
       ? first
-      : first && typeof first.message === 'string'
-        ? first.message
+      : typeof first === 'object' &&
+      first !== null &&
+      'message' in first &&
+      typeof (first as { message?: unknown }).message === 'string'
+        ? (first as { message: string }).message
         : '';
 
   if (message.includes('Could not parse CSS stylesheet')) {
@@ -31,6 +34,7 @@ console.error = (...args: any[]) => {
 
   originalConsoleError(...args);
 };
+
 
 Object.defineProperty(window, 'localStorage', { value: mock() });
 Object.defineProperty(window, 'sessionStorage', { value: mock() });

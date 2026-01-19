@@ -9,6 +9,7 @@ import { SessionApiService } from '../../../../core/service/session-api.service'
 import { TeacherService } from '../../../../core/service/teacher.service';
 import { SessionService } from '../../../../core/service/session.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {SessionInformation} from "../../../../core/models/sessionInformation.interface";
 
 describe('DetailComponent (integration)', () => {
   let fixture: ComponentFixture<DetailComponent>;
@@ -49,9 +50,9 @@ describe('DetailComponent (integration)', () => {
       updatedAt: new Date().toISOString(),
       teacher_id: 77,
       users: sessionUsers,
-    } as any;
+    };
 
-    const teacherMock = { id: 77, firstName: 'Ada', lastName: 'Lovelace' } as any;
+    const teacherMock = { id: 77, firstName: 'Ada', lastName: 'Lovelace' };
 
     sessionApiMock.detail.mockReturnValue(of(sessionMock));
     teacherServiceMock.detail.mockReturnValue(of(teacherMock));
@@ -60,8 +61,18 @@ describe('DetailComponent (integration)', () => {
     sessionApiMock.participate.mockReturnValue(of(void 0));
     sessionApiMock.unParticipate.mockReturnValue(of(void 0));
 
+    const sessionInfo: SessionInformation = {
+      id: userId,
+      admin,
+      token: 'fake-token',
+      type: admin ? 'ADMIN' : 'USER',
+      username: 'test@test.com',
+      firstName: 'Test',
+      lastName: 'User',
+    };
+
     const sessionServiceMock: Partial<SessionService> = {
-      sessionInformation: { id: userId, admin } as any,
+      sessionInformation: sessionInfo,
     };
 
     await TestBed.configureTestingModule({
@@ -130,7 +141,7 @@ describe('DetailComponent (integration)', () => {
     await createComponent({ admin: true, userId: 5, sessionUsers: [1, 2] });
 
     const router = TestBed.inject(Router);
-    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true as any);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.delete();
 

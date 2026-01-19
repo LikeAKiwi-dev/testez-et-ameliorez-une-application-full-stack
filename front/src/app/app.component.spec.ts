@@ -62,7 +62,7 @@ describe('AppComponent', () => {
     await createComponent(true);
 
     const router = TestBed.inject(Router);
-    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true as any);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.logout();
 

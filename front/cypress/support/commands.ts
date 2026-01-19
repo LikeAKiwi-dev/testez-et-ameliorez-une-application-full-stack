@@ -8,24 +8,39 @@ type LoginUser = {
   admin: boolean;
 };
 
+type Teacher = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
+
+type Session = {
+  id: number;
+  name: string;
+  description: string;
+  date: string;
+  teacher_id: number;
+};
+
 declare global {
   namespace Cypress {
     interface Chainable {
       loginWithIntercept(user: LoginUser): Chainable<void>;
-      mockSessionsList(sessions: any[]): Chainable<void>;
-      mockTeachers(teachers: any[]): Chainable<void>;
+      mockSessionsList(sessions: Session[]): Chainable<void>;
+      mockTeachers(teachers: Teacher[]): Chainable<void>;
     }
   }
 }
 
-Cypress.Commands.add('mockSessionsList', (sessions: any[]) => {
+// @ts-ignore
+Cypress.Commands.add('mockSessionsList', (sessions: Session[]) => {
   cy.intercept('GET', '**/api/session', {
     statusCode: 200,
     body: sessions,
   }).as('getSessions');
 });
 
-Cypress.Commands.add('mockTeachers', (teachers: any[]) => {
+Cypress.Commands.add('mockTeachers', (teachers: Teacher[]) => {
   cy.intercept('GET', '**/api/teacher', {
     statusCode: 200,
     body: teachers,

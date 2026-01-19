@@ -9,12 +9,9 @@ import { SessionService } from '../../../../core/service/session.service';
 import { Session } from '../../../../core/models/session.interface';
 
 import { provideRouter } from '@angular/router';
-
+import { SessionInformation } from '../../../../core/models/sessionInformation.interface';
 
 describe('ListComponent (integration)', () => {
-  let fixture: ComponentFixture<ListComponent>;
-  let component: ListComponent;
-
   const sessionsMock: Session[] = [
     {
       id: 1,
@@ -28,13 +25,25 @@ describe('ListComponent (integration)', () => {
     all: jest.fn(),
   };
 
+  const makeSessionInfo = (admin: boolean): SessionInformation => ({
+    id: 1,
+    admin,
+    token: 'fake-token',
+    type: admin ? 'ADMIN' : 'USER',
+    username: 'test@test.com',
+    firstName: 'Test',
+    lastName: 'User',
+  });
+
   const sessionServiceMock: Partial<SessionService> = {
-    sessionInformation: { admin: true } as any,
+    sessionInformation: makeSessionInfo(true),
   };
 
-  const createComponent = async (admin: boolean) => {
+  const createComponent = async (
+    admin: boolean
+  ): Promise<ComponentFixture<ListComponent>> => {
     sessionApiMock.all.mockReturnValue(of(sessionsMock));
-    (sessionServiceMock as any).sessionInformation = { admin } as any;
+    sessionServiceMock.sessionInformation = makeSessionInfo(admin);
 
     await TestBed.configureTestingModule({
       imports: [ListComponent, NoopAnimationsModule],
@@ -45,36 +54,43 @@ describe('ListComponent (integration)', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ListComponent);
-    component = fixture.componentInstance;
+    const fixture = TestBed.createComponent(ListComponent);
     fixture.detectChanges();
+
+    return fixture;
   };
 
   it('should show Create and Edit buttons when user is admin', async () => {
-    await createComponent(true);
+    const fixture = await createComponent(true);
 
     expect(sessionApiMock.all).toHaveBeenCalled();
 
-    const createBtn = fixture.nativeElement.querySelector('button[routerLink="create"]');
+    const createBtn: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('button[routerLink="create"]');
     expect(createBtn).not.toBeNull();
 
-    const editBtn = fixture.nativeElement.querySelector('button[ng-reflect-router-link*="update"]');
+    const editBtn: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('button[ng-reflect-router-link*="update"]');
     expect(editBtn).not.toBeNull();
 
-    const detailBtn = fixture.nativeElement.querySelector('button[ng-reflect-router-link*="detail"]');
+    const detailBtn: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('button[ng-reflect-router-link*="detail"]');
     expect(detailBtn).not.toBeNull();
   });
 
   it('should hide Create and Edit buttons when user is not admin, but still show Detail', async () => {
-    await createComponent(false);
+    const fixture = await createComponent(false);
 
-    const createBtn = fixture.nativeElement.querySelector('button[routerLink="create"]');
+    const createBtn: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('button[routerLink="create"]');
     expect(createBtn).toBeNull();
 
-    const editBtn = fixture.nativeElement.querySelector('button[ng-reflect-router-link*="update"]');
+    const editBtn: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('button[ng-reflect-router-link*="update"]');
     expect(editBtn).toBeNull();
 
-    const detailBtn = fixture.nativeElement.querySelector('button[ng-reflect-router-link*="detail"]');
+    const detailBtn: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('button[ng-reflect-router-link*="detail"]');
     expect(detailBtn).not.toBeNull();
   });
 });

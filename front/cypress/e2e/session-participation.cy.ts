@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 describe('Session participation (non-admin)', () => {
   beforeEach(() => {
     cy.fixture('user-user.json').as('normalUser');

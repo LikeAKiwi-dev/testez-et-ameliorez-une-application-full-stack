@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 describe('Register page', () => {
   beforeEach(() => {
     cy.visit('/register');

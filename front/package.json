@@ -9,7 +9,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "e2e:ci": "ng run yoga:e2e-ci --browser edge",
-    "e2e:ci:coverage": "npx nyc --reporter=lcov --reporter=text-summary ng run yoga:e2e-ci --browser edge",
+    "e2e:coverage": "npx nyc --reporter=lcov --reporter=text-summary ng run yoga:e2e-ci --browser edge",
     "e2e:ci:coverage:html": "npx nyc --reporter=html ng run yoga:e2e-ci --browser edge",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"

@@ -9,6 +9,7 @@ import { SessionApiService } from '../../../../core/service/session-api.service'
 import { SessionService } from '../../../../core/service/session.service';
 import { TeacherService } from '../../../../core/service/teacher.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {SessionInformation} from "../../../../core/models/sessionInformation.interface";
 
 describe('FormComponent (integration)', () => {
   let fixture: ComponentFixture<FormComponent>;
@@ -45,11 +46,20 @@ describe('FormComponent (integration)', () => {
       navigate: jest.fn(),
     };
 
+    const sessionInfo: SessionInformation = {
+      id: 1,
+      admin,
+      token: 'fake-token',
+      type: admin ? 'ADMIN' : 'USER',
+      username: 'test@test.com',
+      firstName: 'Test',
+      lastName: 'User',
+    };
     const sessionServiceMock: Partial<SessionService> = {
-      sessionInformation: { id: 1, admin } as any,
+      sessionInformation: sessionInfo,
     };
 
-    teacherServiceMock.all.mockReturnValue(of([{ id: 1, firstName: 'Ada', lastName: 'Lovelace' } as any]));
+    teacherServiceMock.all.mockReturnValue(of([{ id: 1, firstName: 'Ada', lastName: 'Lovelace' }]));
 
     if (update) {
       sessionApiMock.detail.mockReturnValue(
@@ -62,11 +72,11 @@ describe('FormComponent (integration)', () => {
           users: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-        } as any)
+        })
       );
-      sessionApiMock.update.mockReturnValue(of({} as any));
+      sessionApiMock.update.mockReturnValue(of({}));
     } else {
-      sessionApiMock.create.mockReturnValue(of({} as any));
+      sessionApiMock.create.mockReturnValue(of({}));
     }
 
     await TestBed.configureTestingModule({
@@ -133,7 +143,16 @@ describe('FormComponent (integration)', () => {
 
     component.submit();
 
-    expect(sessionApiMock.update).toHaveBeenCalledWith('12', expect.any(Object));
+    expect(sessionApiMock.update).toHaveBeenCalledWith(
+      '12',
+      {
+        name: 'Yoga v2',
+        date: '2024-01-02',
+        teacher_id: 1,
+        description: 'updated',
+      }
+    );
+
     expect(routerMock.navigate).toHaveBeenCalledWith(['sessions']);
   });
 });

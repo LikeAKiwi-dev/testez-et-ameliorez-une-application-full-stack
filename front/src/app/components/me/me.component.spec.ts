@@ -99,7 +99,7 @@ describe('MeComponent (integration)', () => {
     await createComponent(false);
 
     // spy direct sur la méthode du composant pour éviter les pièges Material/Zone
-    const spy = jest.spyOn(component as any, 'delete');
+    const spy = jest.spyOn(component, 'delete');
 
     fixture.detectChanges();
     const deleteBtn = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('button'))

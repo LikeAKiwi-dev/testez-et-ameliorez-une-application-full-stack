@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 describe('Sessions list page', () => {
   beforeEach(() => {
     cy.fixture('sessions.json').as('sessions');
